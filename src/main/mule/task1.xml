@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="879e04d5-a7a3-4cb2-98d8-f541934192e0" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="ff288e23-5b67-44a8-a86f-e83e75192563" >
+		<vm:queues >
+			<vm:queue queueName="VM1" />
+			<vm:queue queueName="VM2" />
+		</vm:queues>
+	</vm:config>
+	<flow name="task1Flow1" doc:id="77f2ad7f-6d88-456a-b9da-8491c9527cc4" >
+		<vm:listener doc:name="Listener" doc:id="a55eb855-a145-4cb7-8d0c-3c47bc3c1756" config-ref="VM_Config" queueName="VM1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7fd551ac-ffab-4820-b316-6b9d17580473"/>
+		<set-payload value="#[20]" doc:name="Set Payload" doc:id="6cc53b58-52fc-46e8-a9c3-9be6504503d6" mimeType="application/json"/>
+		<logger level="INFO" doc:name="Logger" doc:id="43eed432-e05c-4d1a-b2d6-a8b115195161"/>
+	</flow>
+	<flow name="task1Flow" doc:id="66debd73-9f00-4c3f-9577-e19a492798bf" >
+		<http:listener doc:name="Listener" doc:id="1de8a499-3483-4c13-8078-9d6f5b07290a" config-ref="HTTP_Listener_config" path="task1">
+			<http:response >
+				<http:body ><![CDATA[#[output application/json --- payload]]]></http:body>
+			</http:response>
+		</http:listener>
+		<set-payload value="#[10]" doc:name="Set Payload" doc:id="7b7175b3-6330-4bfa-afa8-3fde380f5bdc" />
+		<logger level="INFO" doc:name="Logger" doc:id="1ca6be47-69dc-49c3-ad24-d9fa86571941"/>
+		<vm:publish doc:name="Publish" doc:id="de19bb01-3d87-43b4-996a-9adbeb91d5d6" config-ref="VM_Config" sendCorrelationId="ALWAYS" correlationId="#[correlationId]" queueName="VM1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="10ff1236-e354-4b9c-90fd-c2ee3d647c42"/>
+	</flow>
+</mule>
